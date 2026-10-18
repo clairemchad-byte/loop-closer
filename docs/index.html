@@ -623,9 +623,11 @@ function step(){cx.clearRect(0,0,innerWidth,innerHeight);parts=parts.filter(p=>p
 
 // ───────────────────────── ADD / CASH / HACKS ─────────────────────────
 let addSize='S';
+// Chat replies wrap the JSON in prose and code fences, and phones curl the quotes. Take the outermost {...}; retry with straight quotes.
+function parseDeck(raw){const a=raw.indexOf('{'),b=raw.lastIndexOf('}');if(a<0||b<=a)return null;const j=raw.slice(a,b+1);try{return JSON.parse(j)}catch(e){}try{return JSON.parse(j.replace(/[“”„‟″]/g,'"').replace(/[‘’]/g,"'"))}catch(e){}return null}
 function addCards(){
   const raw=$('addText').value.trim();
-  if(raw.startsWith('{')||raw.startsWith('```')){const j=raw.replace(/^```[a-z]*\s*/i,'').replace(/```\s*$/,'');let deck=null;try{deck=JSON.parse(j)}catch(e){toast('That JSON didn\'t parse. Copy the whole block from the chat, braces included.');return}
+  if(raw.startsWith('{')||raw.startsWith('```')||/["“]cards["”]\s*:/.test(raw)){const deck=parseDeck(raw);if(deck===null){toast('That JSON didn\'t parse. Copy the whole block from the chat, from the first { to the last }.');return}
     if(!deck||!Array.isArray(deck.cards)||!deck.cards.length){toast('No cards in that deck. It needs a "cards" list.');return}
     try{localStorage.setItem('loop-closer-import',JSON.stringify(deck))}catch(e){toast('Browser storage is off here, so a pasted deck can\'t stick.');return}
     const dd=new Date();const day=deck.day||(dd.getFullYear()+'-'+String(dd.getMonth()+1).padStart(2,'0')+'-'+String(dd.getDate()).padStart(2,'0'));try{localStorage.removeItem('loop-closer-'+day)}catch(e){}
