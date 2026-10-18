@@ -117,6 +117,14 @@ python3 <skill-dir>/scripts/build.py deck.json --out loop-closer.html
 It validates the deck, prints the dealt sequence as plain text, and writes the page. Read the
 warnings: a missing first move on a BOSS is the kind of thing that makes the card unswipeable.
 
+**No Python?** If that fails with `command not found` or exit code 127 (common on Windows),
+try `python` and then `py -3` in its place. If none of them run, don't edit or rewrite
+build.py and don't ask them to install anything. Copy `assets/loop-closer.template.html` to
+`loop-closer.html` and replace the one `__CONFIG__` placeholder (in `const BASE_CFG=__CONFIG__;`)
+with the deck JSON itself, written as `<\/` wherever `</` appears. The page sorts, sizes and
+picks goals in the browser by the same rules. You lose only the printed plan and the warnings,
+so check first moves on L and BOSS cards yourself.
+
 ### 5. Ship it
 
 - **If the Artifact tool is available**, publish the HTML with favicon 🎟️. Load the
@@ -132,7 +140,9 @@ warnings: a missing first move on a BOSS is the kind of thing that makes the car
   progress may not survive a refresh inside the artifact viewer, so cash out and copy the recap
   before closing; and "publish" on the artifact gives them a link that works on a phone.
 - **Otherwise** (a terminal with a filesystem), write the file somewhere that won't vanish and
-  open it: `open loop-closer.html` on macOS. Say where it is.
+  open it: `open loop-closer.html` on macOS, `start "" loop-closer.html` on Windows,
+  `xdg-open loop-closer.html` on Linux. If that fails, give them the full path to
+  double-click. Say where it is.
 
 ### 6. Hand it over in under ten lines
 
