@@ -191,6 +191,20 @@ body.shake{animation:bodyshake .4s}
 .cta a.btn{align-self:flex-start;background:var(--ink);color:var(--ground);text-decoration:none;border-radius:100px;padding:7px 14px;font-family:var(--mono);font-size:12px}
 #helpCredit a{color:var(--cobalt)}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+  /* Bigger buttons, farther from the bottom edge */
+.bar {
+ bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
+.bar button {
+ min-height: 56px;
+ padding: 14px 20px;
+ font-size: 16px;
+}
+.app {
+ padding-bottom: 160px;
+}
+  
 </style>
 
 <div class="app">
