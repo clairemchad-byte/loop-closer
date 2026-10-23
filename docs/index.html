@@ -718,3 +718,69 @@ renderAll();
 if(!S.goal)$('setup').classList.add('on');
 (async()=>{try{if(!window.claude||!window.claude.use)return;db=await window.claude.use('db');if(!db)return;dbDoc=db.doc('days/'+CFG.day);const snap=await dbDoc.get().catch(()=>null);const remote=snap&&snap.exists&&snap.data?snap.data():null;if(remote&&(remote.xp||0)>S.xp){S.xp=remote.xp;S.tix=remote.tix||0;S.done=remote.done||[];S.shelved=remote.shelved||[];S.skips=remote.skips||{};S.custom=remote.custom||[];S.parked=remote.parked||[];S.goal=remote.goal||S.goal;S.stake=remote.stake||S.stake;save();renderAll()}else save()}catch(e){}})();
 </script>
+
+<script>
+(() => {
+ const prefix = '#brain-dump=';
+ if (!location.hash.startsWith(prefix)) return;
+ try {
+   const raw = decodeURIComponent(location.hash.slice(prefix.length));
+   if (raw.length > 20000) throw new Error('This list is too long.');
+   const deck = JSON.parse(raw);
+   if (!Array.isArray(deck.cards) ||
+       deck.cards.length < 1 || deck.cards.length > 50) {
+     throw new Error('The link needs between 1 and 50 tasks.');
+   }
+   const incoming = deck.cards.map(card => {
+     if (!card || typeof card.title !== 'string' ||
+         !card.title.trim() || card.title.length > 120) {
+       throw new Error('Each task needs a title of 1–120 characters.');
+     }
+     const size = String(card.size || 'M').toUpperCase();
+     if (!['S', 'M', 'L'].includes(size)) {
+       throw new Error('Task sizes must be S, M, or L.');
+     }
+     return {
+       title: card.title.trim(),
+       size,
+       first: typeof card.first === 'string'
+         ? card.first.slice(0, 300) : '',
+       live: true
+     };
+   });
+   const clearLink = () => history.replaceState(
+     null, '', location.pathname + location.search
+   );
+   const receipts = S.brainDumpLinks || [];
+   if (receipts.includes(raw)) {
+     clearLink();
+     alert('This list has already been added to this deck.');
+     return;
+   }
+   const preview = incoming.map((card, i) =>
+     (i + 1) + '. [' + card.size + '] ' + card.title
+   ).join('\n');
+   if (!confirm('Add these tasks to your existing deck?\n\n' +
+       preview + '\n\nYour existing tasks will stay.')) {
+     clearLink();
+     return;
+   }
+   const batch = crypto.randomUUID();
+   const added = incoming.map((card, i) =>
+     Object.assign({}, card, {id: 'brain-' + batch + '-' + i})
+   );
+   const next = Object.assign({}, S, {
+     custom: [...added, ...S.custom],
+     order: [...added.map(card => card.id), ...S.order],
+     brainDumpLinks: [...receipts, raw]
+   });
+   localStorage.setItem(KEY, JSON.stringify(next));
+   S = next;
+   clearLink();
+   renderAll();
+   toast(added.length + ' tasks added to your deck.');
+ } catch (error) {
+   alert('Could not add this list. ' + error.message);
+ }
+})();
+</script>
